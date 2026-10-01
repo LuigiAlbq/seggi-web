@@ -1,0 +1,4 @@
+# Arquivos do gerador que não usamos no seggi-web.
+git_push.sh
+README.md
+.gitignore

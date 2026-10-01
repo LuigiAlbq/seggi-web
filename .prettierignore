@@ -1,0 +1,5 @@
+# Cliente gerado pelo OpenAPI Generator (npm run api:generate).
+src/app/core/api/generated/
+dist/
+.angular/
+coverage/

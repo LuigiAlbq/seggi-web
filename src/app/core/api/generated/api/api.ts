@@ -1,0 +1,17 @@
+export * from './category.service';
+import { CategoryService } from './category.service';
+export * from './group.service';
+import { GroupService } from './group.service';
+export * from './payment.service';
+import { PaymentService } from './payment.service';
+export * from './product.service';
+import { ProductService } from './product.service';
+export * from './role.service';
+import { RoleService } from './role.service';
+export * from './stock.service';
+import { StockService } from './stock.service';
+export * from './user.service';
+import { UserService } from './user.service';
+export * from './warehouse.service';
+import { WarehouseService } from './warehouse.service';
+export const APIS = [CategoryService, GroupService, PaymentService, ProductService, RoleService, StockService, UserService, WarehouseService];
