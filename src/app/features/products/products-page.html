@@ -1,0 +1,127 @@
+<app-page-header title="Produtos" subtitle="Catálogo de produtos com preço e categoria.">
+  <p-button label="Novo produto" icon="pi pi-plus" (onClick)="openCreate()" />
+</app-page-header>
+
+<div class="overflow-x-auto rounded-xl border border-surface bg-surface-0 dark:bg-surface-900">
+  <p-table
+    #table
+    [value]="rows()"
+    [loading]="products.isLoading()"
+    [globalFilterFields]="['name', 'categoryName']"
+    [paginator]="rows().length > 10"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    sortField="name"
+    [sortOrder]="1"
+    dataKey="idProduct"
+    [tableStyle]="{ 'min-width': '40rem' }"
+  >
+    <ng-template #caption>
+      <div class="flex flex-wrap gap-2">
+        <p-iconfield iconPosition="left" class="w-full sm:w-80">
+          <p-inputicon class="pi pi-search" />
+          <input
+            pInputText
+            type="search"
+            class="w-full"
+            placeholder="Buscar por nome ou categoria"
+            aria-label="Buscar produtos"
+            (input)="table.filterGlobal($any($event.target).value, 'contains')"
+          />
+        </p-iconfield>
+        <p-select
+          class="w-full sm:w-60"
+          [options]="categories()"
+          optionLabel="name"
+          optionValue="idCategory"
+          placeholder="Todas as categorias"
+          ariaLabel="Filtrar por categoria"
+          [showClear]="true"
+          (onChange)="table.filter($event.value, 'categoryId', 'equals')"
+        />
+      </div>
+    </ng-template>
+
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="name">Nome <p-sort-icon field="name" /></th>
+        <th pSortableColumn="categoryName">Categoria <p-sort-icon field="categoryName" /></th>
+        <th pSortableColumn="price" class="text-right">Preço <p-sort-icon field="price" /></th>
+        <th class="w-36"><span class="sr-only">Ações</span></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-product>
+      <tr>
+        <td>
+          <a
+            [routerLink]="['/produtos', product.idProduct]"
+            class="font-medium text-primary no-underline hover:underline"
+          >
+            {{ product.name }}
+          </a>
+        </td>
+        <td>
+          @if (product.categoryName) {
+            <p-tag [value]="product.categoryName" severity="secondary" />
+          } @else {
+            <span class="text-muted-color">—</span>
+          }
+        </td>
+        <td class="text-right tabular-nums">{{ product.price | currency: 'BRL' }}</td>
+        <td class="whitespace-nowrap text-right">
+          <p-button
+            icon="pi pi-warehouse"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            ariaLabel="Ver estoque"
+            pTooltip="Ver estoque"
+            [routerLink]="['/produtos', product.idProduct]"
+          />
+          <p-button
+            icon="pi pi-pencil"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            ariaLabel="Editar"
+            pTooltip="Editar"
+            (onClick)="openEdit(product)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            [text]="true"
+            [rounded]="true"
+            severity="danger"
+            ariaLabel="Excluir"
+            pTooltip="Excluir"
+            (onClick)="confirmDelete(product)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="4">
+          @if (products.error()) {
+            <app-load-error (retry)="products.reload()" />
+          } @else if (!products.isLoading()) {
+            <app-empty-state
+              icon="pi pi-box"
+              title="Nenhum produto encontrado"
+              message="Cadastre produtos para controlar o estoque nos armazéns."
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-product-form-dialog
+  [(visible)]="dialogOpen"
+  [product]="editing()"
+  [categories]="categories()"
+  (saved)="products.reload()"
+/>

@@ -1,0 +1,101 @@
+<p-button
+  label="Produtos"
+  icon="pi pi-arrow-left"
+  [text]="true"
+  severity="secondary"
+  size="small"
+  routerLink="/produtos"
+  class="mb-2 inline-block"
+/>
+
+@if (notFound()) {
+  <app-empty-state
+    icon="pi pi-box"
+    title="Produto não encontrado"
+    message="Ele pode ter sido excluído."
+  />
+} @else if (product.error()) {
+  <app-load-error (retry)="product.reload(); stock.reload()" />
+} @else if (product.hasValue()) {
+  @let p = product.value();
+  <app-page-header
+    [title]="p.name ?? 'Produto'"
+    subtitle="Estoque deste produto em cada armazém."
+  />
+
+  <section class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="rounded-xl border border-surface bg-surface-0 p-4 dark:bg-surface-900">
+      <p class="m-0 text-sm text-muted-color">Preço</p>
+      <p class="m-0 mt-1 text-2xl font-semibold tabular-nums">{{ p.price | currency: 'BRL' }}</p>
+    </div>
+    <div class="rounded-xl border border-surface bg-surface-0 p-4 dark:bg-surface-900">
+      <p class="m-0 text-sm text-muted-color">Categoria</p>
+      <p class="m-0 mt-2">
+        @if (p.categoryName) {
+          <p-tag [value]="p.categoryName" severity="secondary" />
+        } @else {
+          <span class="text-muted-color">Sem categoria</span>
+        }
+      </p>
+    </div>
+    <div class="rounded-xl border border-surface bg-surface-0 p-4 dark:bg-surface-900">
+      <p class="m-0 text-sm text-muted-color">Total em estoque</p>
+      <p class="m-0 mt-1 text-2xl font-semibold tabular-nums">
+        {{ totalUnits() | number }} <span class="text-base font-normal text-muted-color">un.</span>
+      </p>
+    </div>
+  </section>
+
+  <div class="overflow-x-auto rounded-xl border border-surface bg-surface-0 dark:bg-surface-900">
+    <p-table
+      [value]="stockRows()"
+      [loading]="stock.isLoading()"
+      sortField="warehouseName"
+      [sortOrder]="1"
+    >
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="warehouseName">Armazém <p-sort-icon field="warehouseName" /></th>
+          <th pSortableColumn="quantity" class="text-right">
+            Quantidade <p-sort-icon field="quantity" />
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-item>
+        <tr>
+          <td>
+            <a
+              [routerLink]="['/armazens', item.warehouseId]"
+              class="font-medium text-primary no-underline hover:underline"
+            >
+              {{ item.warehouseName }}
+            </a>
+          </td>
+          <td class="text-right tabular-nums">{{ item.quantity | number }}</td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="2">
+            @if (stock.error()) {
+              <app-load-error (retry)="stock.reload()" />
+            } @else if (!stock.isLoading()) {
+              <app-empty-state
+                icon="pi pi-warehouse"
+                title="Sem estoque"
+                message="Este produto ainda não está em nenhum armazém. Defina quantidades na tela do armazém."
+              />
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+} @else {
+  <p-skeleton width="16rem" height="2rem" styleClass="mb-6" />
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <p-skeleton height="5.5rem" />
+    <p-skeleton height="5.5rem" />
+    <p-skeleton height="5.5rem" />
+  </div>
+}

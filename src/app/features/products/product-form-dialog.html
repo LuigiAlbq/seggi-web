@@ -1,0 +1,62 @@
+<p-dialog
+  [header]="product() ? 'Editar produto' : 'Novo produto'"
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '32rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="flex flex-col gap-2">
+      <label for="product-name" class="font-medium">Nome</label>
+      <input
+        pInputText
+        id="product-name"
+        formControlName="name"
+        autocomplete="off"
+        [invalid]="form.controls.name.invalid && form.controls.name.touched"
+      />
+      @if (form.controls.name.touched && form.controls.name.hasError('required')) {
+        <p-message severity="error" size="small" variant="simple">Informe o nome.</p-message>
+      }
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="product-price" class="font-medium">Preço</label>
+      <p-inputnumber
+        inputId="product-price"
+        formControlName="price"
+        mode="currency"
+        currency="BRL"
+        locale="pt-BR"
+        [min]="0"
+        [invalid]="form.controls.price.invalid && form.controls.price.touched"
+      />
+      @if (form.controls.price.touched && form.controls.price.hasError('required')) {
+        <p-message severity="error" size="small" variant="simple">Informe o preço.</p-message>
+      }
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="product-category" class="font-medium">Categoria</label>
+      <p-select
+        inputId="product-category"
+        formControlName="categoryId"
+        [options]="categories()"
+        optionLabel="name"
+        optionValue="idCategory"
+        placeholder="Sem categoria"
+        [showClear]="true"
+        [filter]="categories().length > 8"
+        filterBy="name"
+        appendTo="body"
+      />
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="visible.set(false)" />
+    <p-button label="Salvar" icon="pi pi-check" (onClick)="submit()" [loading]="saving()" />
+  </ng-template>
+</p-dialog>

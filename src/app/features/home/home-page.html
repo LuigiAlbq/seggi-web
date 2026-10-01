@@ -1,0 +1,81 @@
+<app-page-header title="Início" subtitle="Visão geral do catálogo e da ocupação dos armazéns." />
+
+@if (hasError()) {
+  <div class="mb-6 rounded-xl border border-surface bg-surface-0 dark:bg-surface-900">
+    <app-load-error (retry)="reloadAll()" />
+  </div>
+}
+
+<section class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Resumo">
+  @for (card of cards(); track card.label) {
+    <a
+      [routerLink]="card.route"
+      class="flex items-center gap-4 rounded-xl border border-surface bg-surface-0 p-4 text-color no-underline transition-colors hover:bg-emphasis dark:bg-surface-900"
+    >
+      <span
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-highlight"
+        aria-hidden="true"
+      >
+        <i [class]="card.icon"></i>
+      </span>
+      <span class="min-w-0">
+        <span class="block text-sm text-muted-color">{{ card.label }}</span>
+        @if (card.value === undefined) {
+          <p-skeleton width="3rem" height="1.75rem" />
+        } @else if (card.value === null) {
+          <span class="block text-2xl font-semibold text-muted-color">—</span>
+        } @else {
+          <span class="block text-2xl font-semibold tabular-nums">{{ card.value | number }}</span>
+        }
+      </span>
+    </a>
+  }
+</section>
+
+<section class="rounded-xl border border-surface bg-surface-0 p-4 dark:bg-surface-900">
+  <div class="mb-4 flex items-center justify-between gap-2">
+    <h2 class="m-0 text-lg font-semibold">Ocupação dos armazéns</h2>
+    <p-button
+      label="Ver todos"
+      [text]="true"
+      size="small"
+      icon="pi pi-arrow-right"
+      iconPos="right"
+      routerLink="/armazens"
+    />
+  </div>
+
+  @if (warehouses.isLoading() && warehouseRows().length === 0) {
+    <div class="flex flex-col gap-3">
+      <p-skeleton height="2.5rem" />
+      <p-skeleton height="2.5rem" />
+    </div>
+  } @else if (warehouseRows().length === 0 && !warehouses.error()) {
+    <app-empty-state
+      icon="pi pi-warehouse"
+      title="Nenhum armazém cadastrado"
+      message="Cadastre um armazém para acompanhar a ocupação aqui."
+    >
+      <p-button label="Cadastrar armazém" icon="pi pi-plus" routerLink="/armazens" />
+    </app-empty-state>
+  } @else {
+    <ul class="m-0 flex list-none flex-col gap-1 p-0">
+      @for (warehouse of warehouseRows(); track warehouse.idWarehouse) {
+        <li>
+          <a
+            [routerLink]="['/armazens', warehouse.idWarehouse]"
+            class="grid grid-cols-1 items-center gap-2 rounded-lg px-3 py-2 text-color no-underline hover:bg-emphasis sm:grid-cols-[1fr_16rem]"
+          >
+            <span class="min-w-0">
+              <span class="block truncate font-medium">{{ warehouse.name }}</span>
+              <span class="block truncate text-sm text-muted-color">{{
+                warehouse.address || 'Sem endereço'
+              }}</span>
+            </span>
+            <app-capacity-bar [used]="warehouse.used" [capacity]="warehouse.capacity ?? 0" />
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>

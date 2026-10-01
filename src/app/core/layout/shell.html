@@ -1,0 +1,79 @@
+<ng-template #brand>
+  <a routerLink="/" class="flex items-center gap-2 px-2 py-1 no-underline text-color">
+    <span
+      class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-contrast"
+    >
+      <i class="pi pi-warehouse"></i>
+    </span>
+    <span class="text-xl font-bold tracking-tight">Seggi</span>
+  </a>
+</ng-template>
+
+<ng-template #nav>
+  <nav class="flex flex-col gap-1" aria-label="Navegação principal">
+    @for (item of navItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-emphasis font-semibold"
+        [routerLinkActiveOptions]="{ exact: !!item.exact }"
+        (click)="mobileMenuOpen.set(false)"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 text-color no-underline transition-colors hover:bg-emphasis"
+      >
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</ng-template>
+
+<div class="flex min-h-screen">
+  <aside
+    class="hidden w-64 shrink-0 flex-col gap-6 border-r border-surface bg-surface-0 p-4 dark:bg-surface-900 lg:flex"
+  >
+    <ng-container [ngTemplateOutlet]="brand" />
+    <ng-container [ngTemplateOutlet]="nav" />
+  </aside>
+
+  <p-drawer [visible]="mobileMenuOpen()" (visibleChange)="mobileMenuOpen.set($event)">
+    <ng-template #headless>
+      <div class="flex flex-col gap-6 p-4">
+        <ng-container [ngTemplateOutlet]="brand" />
+        <ng-container [ngTemplateOutlet]="nav" />
+      </div>
+    </ng-template>
+  </p-drawer>
+
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header
+      class="sticky top-0 z-10 flex items-center gap-2 border-b border-surface bg-surface-0 px-4 py-2 dark:bg-surface-900"
+    >
+      <p-button
+        class="lg:hidden"
+        icon="pi pi-bars"
+        [text]="true"
+        severity="secondary"
+        ariaLabel="Abrir menu"
+        (onClick)="mobileMenuOpen.set(true)"
+      />
+      <span class="font-semibold lg:hidden">Seggi</span>
+      <span class="flex-1"></span>
+      <p-button
+        [icon]="theme.dark() ? 'pi pi-sun' : 'pi pi-moon'"
+        [text]="true"
+        [rounded]="true"
+        severity="secondary"
+        [ariaLabel]="theme.dark() ? 'Usar tema claro' : 'Usar tema escuro'"
+        [pTooltip]="theme.dark() ? 'Tema claro' : 'Tema escuro'"
+        tooltipPosition="left"
+        (onClick)="theme.toggle()"
+      />
+    </header>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 p-4 md:p-6">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+<p-toast position="top-right" />
+<p-confirm-dialog />

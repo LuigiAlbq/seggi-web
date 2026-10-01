@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.21.0",
+    "generators": {
+      "seggi-api": {
+        "generatorName": "typescript-angular",
+        "inputSpec": "../seggi-app/src/main/resources/openapi/api-spec.yaml",
+        "output": "src/app/core/api/generated",
+        "skipValidateSpec": false,
+        "additionalProperties": {
+          "ngVersion": "20.0.0",
+          "providedIn": "root",
+          "fileNaming": "kebab-case",
+          "stringEnums": true,
+          "enumPropertyNaming": "UPPERCASE",
+          "supportsES6": true
+        }
+      }
+    }
+  }
+}

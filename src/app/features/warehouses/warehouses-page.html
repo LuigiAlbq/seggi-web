@@ -1,0 +1,112 @@
+<app-page-header title="Armazéns" subtitle="Locais de estoque e sua ocupação.">
+  <p-button label="Novo armazém" icon="pi pi-plus" (onClick)="openCreate()" />
+</app-page-header>
+
+<div class="overflow-x-auto rounded-xl border border-surface bg-surface-0 dark:bg-surface-900">
+  <p-table
+    #table
+    [value]="rows()"
+    [loading]="warehouses.isLoading()"
+    [globalFilterFields]="['name', 'address']"
+    [paginator]="rows().length > 10"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    sortField="name"
+    [sortOrder]="1"
+    dataKey="idWarehouse"
+    [tableStyle]="{ 'min-width': '48rem' }"
+  >
+    <ng-template #caption>
+      <p-iconfield iconPosition="left" class="w-full sm:w-80">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          class="w-full"
+          placeholder="Buscar por nome ou endereço"
+          aria-label="Buscar armazéns"
+          (input)="table.filterGlobal($any($event.target).value, 'contains')"
+        />
+      </p-iconfield>
+    </ng-template>
+
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="name">Nome <p-sort-icon field="name" /></th>
+        <th>Endereço</th>
+        <th pSortableColumn="capacity" class="text-right">
+          Capacidade <p-sort-icon field="capacity" />
+        </th>
+        <th pSortableColumn="used">Ocupação <p-sort-icon field="used" /></th>
+        <th class="w-36"><span class="sr-only">Ações</span></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-warehouse>
+      <tr>
+        <td>
+          <a
+            [routerLink]="['/armazens', warehouse.idWarehouse]"
+            class="font-medium text-primary no-underline hover:underline"
+          >
+            {{ warehouse.name }}
+          </a>
+        </td>
+        <td class="text-muted-color">{{ warehouse.address || '—' }}</td>
+        <td class="text-right tabular-nums">{{ warehouse.capacity | number }}</td>
+        <td><app-capacity-bar [used]="warehouse.used" [capacity]="warehouse.capacity" /></td>
+        <td class="whitespace-nowrap text-right">
+          <p-button
+            icon="pi pi-box"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            ariaLabel="Gerenciar estoque"
+            pTooltip="Gerenciar estoque"
+            [routerLink]="['/armazens', warehouse.idWarehouse]"
+          />
+          <p-button
+            icon="pi pi-pencil"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            ariaLabel="Editar"
+            pTooltip="Editar"
+            (onClick)="openEdit(warehouse)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            [text]="true"
+            [rounded]="true"
+            severity="danger"
+            ariaLabel="Excluir"
+            pTooltip="Excluir"
+            (onClick)="confirmDelete(warehouse)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="5">
+          @if (warehouses.error()) {
+            <app-load-error (retry)="warehouses.reload()" />
+          } @else if (!warehouses.isLoading()) {
+            <app-empty-state
+              icon="pi pi-warehouse"
+              title="Nenhum armazém encontrado"
+              message="Cadastre armazéns para começar a controlar o estoque."
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-warehouse-form-dialog
+  [(visible)]="dialogOpen"
+  [warehouse]="editing()"
+  (saved)="warehouses.reload()"
+/>

@@ -1,0 +1,90 @@
+<app-page-header title="Categorias" subtitle="Agrupamento dos produtos do catálogo.">
+  <p-button label="Nova categoria" icon="pi pi-plus" (onClick)="openCreate()" />
+</app-page-header>
+
+<div class="overflow-x-auto rounded-xl border border-surface bg-surface-0 dark:bg-surface-900">
+  <p-table
+    #table
+    [value]="rows()"
+    [loading]="categories.isLoading()"
+    [globalFilterFields]="['name', 'description']"
+    [paginator]="rows().length > 10"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    sortField="name"
+    [sortOrder]="1"
+    dataKey="idCategory"
+    [tableStyle]="{ 'min-width': '32rem' }"
+  >
+    <ng-template #caption>
+      <p-iconfield iconPosition="left" class="w-full sm:w-80">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          class="w-full"
+          placeholder="Buscar por nome ou descrição"
+          aria-label="Buscar categorias"
+          (input)="table.filterGlobal($any($event.target).value, 'contains')"
+        />
+      </p-iconfield>
+    </ng-template>
+
+    <ng-template #header>
+      <tr>
+        <th pSortableColumn="name">Nome <p-sort-icon field="name" /></th>
+        <th>Descrição</th>
+        <th class="w-28"><span class="sr-only">Ações</span></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-category>
+      <tr>
+        <td class="font-medium">{{ category.name }}</td>
+        <td class="text-muted-color">{{ category.description || '—' }}</td>
+        <td class="whitespace-nowrap text-right">
+          <p-button
+            icon="pi pi-pencil"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            ariaLabel="Editar"
+            pTooltip="Editar"
+            (onClick)="openEdit(category)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            [text]="true"
+            [rounded]="true"
+            severity="danger"
+            ariaLabel="Excluir"
+            pTooltip="Excluir"
+            (onClick)="confirmDelete(category)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td colspan="3">
+          @if (categories.error()) {
+            <app-load-error (retry)="categories.reload()" />
+          } @else if (!categories.isLoading()) {
+            <app-empty-state
+              icon="pi pi-tags"
+              title="Nenhuma categoria encontrada"
+              message="Crie categorias para organizar os produtos."
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<app-category-form-dialog
+  [(visible)]="dialogOpen"
+  [category]="editing()"
+  (saved)="categories.reload()"
+/>

@@ -1,0 +1,131 @@
+<p-button
+  label="Armazéns"
+  icon="pi pi-arrow-left"
+  [text]="true"
+  severity="secondary"
+  size="small"
+  routerLink="/armazens"
+  class="mb-2 inline-block"
+/>
+
+@if (notFound()) {
+  <app-empty-state
+    icon="pi pi-warehouse"
+    title="Armazém não encontrado"
+    message="Ele pode ter sido excluído."
+  />
+} @else if (warehouse.error()) {
+  <app-load-error (retry)="warehouse.reload(); stock.reload()" />
+} @else if (warehouse.hasValue()) {
+  @let w = warehouse.value();
+  <app-page-header
+    [title]="w.name ?? 'Armazém'"
+    [subtitle]="w.address || 'Sem endereço cadastrado'"
+  >
+    <p-button label="Definir quantidade" icon="pi pi-plus" (onClick)="openSet(null)" />
+  </app-page-header>
+
+  <section
+    class="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-surface bg-surface-0 p-4 dark:bg-surface-900 sm:grid-cols-4"
+  >
+    <div>
+      <p class="m-0 text-sm text-muted-color">Capacidade</p>
+      <p class="m-0 mt-1 text-2xl font-semibold tabular-nums">{{ w.capacity | number }}</p>
+    </div>
+    <div>
+      <p class="m-0 text-sm text-muted-color">Em estoque</p>
+      <p class="m-0 mt-1 text-2xl font-semibold tabular-nums">{{ used() | number }}</p>
+    </div>
+    <div>
+      <p class="m-0 text-sm text-muted-color">Livre</p>
+      <p class="m-0 mt-1 text-2xl font-semibold tabular-nums">
+        {{ (w.capacity ?? 0) - used() | number }}
+      </p>
+    </div>
+    <div class="flex items-center">
+      <app-capacity-bar class="w-full" [used]="used()" [capacity]="w.capacity ?? 0" />
+    </div>
+  </section>
+
+  <div class="overflow-x-auto rounded-xl border border-surface bg-surface-0 dark:bg-surface-900">
+    <p-table
+      [value]="stockRows()"
+      [loading]="stock.isLoading()"
+      sortField="productName"
+      [sortOrder]="1"
+      dataKey="idStock"
+    >
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="productName">Produto <p-sort-icon field="productName" /></th>
+          <th pSortableColumn="quantity" class="text-right">
+            Quantidade <p-sort-icon field="quantity" />
+          </th>
+          <th class="w-28"><span class="sr-only">Ações</span></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-item>
+        <tr>
+          <td>
+            <a
+              [routerLink]="['/produtos', item.productId]"
+              class="font-medium text-primary no-underline hover:underline"
+            >
+              {{ item.productName }}
+            </a>
+          </td>
+          <td class="text-right tabular-nums">{{ item.quantity | number }}</td>
+          <td class="whitespace-nowrap text-right">
+            <p-button
+              icon="pi pi-pencil"
+              [text]="true"
+              [rounded]="true"
+              severity="secondary"
+              ariaLabel="Alterar quantidade"
+              pTooltip="Alterar quantidade"
+              (onClick)="openSet(item)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              [text]="true"
+              [rounded]="true"
+              severity="danger"
+              ariaLabel="Remover do armazém"
+              pTooltip="Remover do armazém"
+              (onClick)="confirmRemove(item)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3">
+            @if (stock.error()) {
+              <app-load-error (retry)="stock.reload()" />
+            } @else if (!stock.isLoading()) {
+              <app-empty-state
+                icon="pi pi-box"
+                title="Armazém vazio"
+                message="Use “Definir quantidade” para adicionar produtos a este armazém."
+              />
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <app-stock-form-dialog
+    [(visible)]="dialogOpen"
+    [warehouse]="w"
+    [stock]="stockRows()"
+    [products]="products()"
+    [item]="editing()"
+    (saved)="stock.reload()"
+  />
+} @else {
+  <p-skeleton width="16rem" height="2rem" styleClass="mb-6" />
+  <p-skeleton height="6rem" />
+}
